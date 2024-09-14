@@ -2,7 +2,8 @@
 name = "app"
 requires-python = ">=3.10"
 dependencies = [
+  "rdkit==2024.03.1",
   "sqlmodel~=0.0.22",
-  "rdkit==2024.03.1"
+  "psycopg[binary]~=3.2.1"
 ]
 version = "0.1.0"
