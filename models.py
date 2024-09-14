@@ -136,7 +136,7 @@ class Compound(SQLModel, table=True):
     mfp2: Bfp = Field(sa_type=Bfp, nullable=True)
 
     __table_args__ = (
-        Index("compoundstructure_molecule", "molecule", postgresql_using="gist"),
+        Index("compound_molecule", "molecule", postgresql_using="gist"),
     )
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
