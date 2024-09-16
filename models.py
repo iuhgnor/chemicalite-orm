@@ -130,7 +130,7 @@ class morganbv_fp(GenericFunction):
 
 
 class Compound(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     molecule: Mol = Field(sa_type=Mol)
     mfp2: Bfp = Field(sa_type=Bfp, nullable=True)
