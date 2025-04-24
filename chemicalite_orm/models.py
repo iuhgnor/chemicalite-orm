@@ -11,15 +11,14 @@ from sqlmodel import Field, SQLModel
 class Mol(UserDefinedType):
     cache_ok = True
 
-    class comparator_factory(UserDefinedType.Comparator):
-        def hassubstruct(self, other):
-            return mol_is_substruct(other, self) == 1
+    def hassubstruct(self, other):
+        return mol_is_substruct(other, self.expr) == 1
 
-        def issubstruct(self, other):
-            return mol_is_substruct(self, other) == 1
+    def issubstruct(self, other):
+        return mol_is_substruct(self.expr, other) == 1
 
-        def __eq__(self, other):
-            return mol_compare(self, other) == 1
+    def compare(self, other):
+        return mol_compare(self.expr, other) == 1
 
     def get_col_spec(self, **kw):
         return "mol"
@@ -72,6 +71,8 @@ class mol_from_smiles(GenericFunction):
 
 
 class mol_from_smarts(GenericFunction):
+    inherit_cache = True
+
     name = "mol_from_smarts"
     type = Mol()
 
@@ -124,4 +125,4 @@ class Compound(SQLModel, table=True):
         return bool(mol_is_substruct(other_mol, self.molecule))
 
     def tanimoto_similarity(self, other_mol: Mol) -> float:
-        return bfp_tanimoto(self.mfp2, mol_from_smarts(other_mol))
+        return float(bfp_tanimoto(self.mfp2, mol_morgan_bfp(other_mol)))
