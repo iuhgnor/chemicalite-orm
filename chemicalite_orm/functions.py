@@ -1,7 +1,7 @@
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.types import Float, Integer
 
-from .types import Mol
+from .types import Bfp, Mol
 
 
 class mol_from_smarts(GenericFunction):
@@ -34,3 +34,13 @@ class is_substructure(GenericFunction):
 class tanimoto(GenericFunction):
     name = "tanimoto"
     type = Float()
+
+
+class mol_pattern_bfp(GenericFunction):
+    type = Bfp()
+    name = "mol_pattern_bfp"
+
+
+class rdtree_subset(GenericFunction):
+    type = Bfp()
+    name = "rdtree_subset"

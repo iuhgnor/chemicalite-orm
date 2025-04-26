@@ -35,11 +35,11 @@ class Mol(UserDefinedType):
         return process
 
 
-class QMol(UserDefinedType):
+class Bfp(UserDefinedType):
     cache_ok = True
 
     def get_col_spec(self, **kw):
-        return "qmol"
+        return "bfp"
 
 
 class mol_from_binary_mol(GenericFunction):
