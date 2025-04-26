@@ -1,16 +1,15 @@
 [tool.poetry]
-name = "chemicalite-orm"
+name = "chemicalite_orm"
 version = "0.1.0"
 description = "ChemicaLite SQLModel ORM"
 authors = ["ronghui <1477180107@qq.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9.21"
+python = "^3.9"
 rdkit = "^2024.09.6"
 sqlmodel = "^0.0.24"
-chemicalite = "^2024.05.1"
-sqlite = "^3.45.3"
+# chemicalite = "^2024.05.1"  # conda install -c conda-forge chemicalite
 
 [build-system]
 requires = ["poetry-core"]

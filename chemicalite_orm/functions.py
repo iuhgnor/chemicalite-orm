@@ -1,3 +1,4 @@
+from sqlalchemy.dialects import sqlite
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.types import Float, Integer
 
@@ -12,6 +13,8 @@ class mol_from_smarts(GenericFunction):
 
 
 class mol_is_substruct(GenericFunction):
+    inherit_cache = True
+
     name = "mol_is_substruct"
     type = Integer()
 
@@ -44,3 +47,20 @@ class mol_pattern_bfp(GenericFunction):
 class rdtree_subset(GenericFunction):
     type = Bfp()
     name = "rdtree_subset"
+
+
+class mol_from_binary_mol(GenericFunction):
+    name = "mol_from_binary_mol"
+    type = Mol()
+
+
+class mol_to_binary_mol(GenericFunction):
+    name = "mol_to_binary_mol"
+    type = sqlite.BLOB()
+
+
+class mol_from_smiles(GenericFunction):
+    inherit_cache = True
+
+    name = "mol_from_smiles"
+    type = Mol()
