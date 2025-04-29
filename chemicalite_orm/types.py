@@ -12,24 +12,29 @@ class Mol(UserDefinedType):
     def bind_processor(self, dialect):
         def process(value):
             if isinstance(value, Chem.Mol):
-                return Chem.MolToSmiles(value)
+                return value.ToBinary()
             elif isinstance(value, str):
-                return value
+                return Chem.MolFromSmiles(value).ToBinary()
             return None
 
         return process
 
     def bind_expression(self, bindvalue):
-        return func.mol_from_smiles(bindvalue)
+        return func.mol_from_binary_mol(bindvalue, type_=self)
 
     def column_expression(self, col):
-        return func.mol_to_binary_mol(col)
+        # ref https://groups.google.com/g/sqlalchemy/c/2nGwTuwkNxw?pli=1
+        return func.mol_to_molblock(col, type_=self)
 
     def result_processor(self, dialect, coltype):
         def process(value):
             if value is None:
                 return None
-            return Chem.Mol(value)
+            try:
+                return Chem.MolFromMolBlock(value, sanitize=True, removeHs=False)
+            except Exception as e:
+                print("Failed to convert MolBlock to Mol:", e)
+                return None
 
         return process
 

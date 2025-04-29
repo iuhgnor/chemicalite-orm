@@ -1,6 +1,6 @@
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.sql.functions import GenericFunction
-from sqlalchemy.types import Float, Integer
+from sqlalchemy.types import TEXT, Float, Integer
 
 from .types import Bfp, Mol
 
@@ -64,3 +64,8 @@ class mol_from_smiles(GenericFunction):
 
     name = "mol_from_smiles"
     type = Mol()
+
+
+class mol_to_molblock(GenericFunction):
+    name = "mol_to_molblock"
+    type = TEXT()
