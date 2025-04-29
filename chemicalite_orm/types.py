@@ -24,17 +24,13 @@ class Mol(UserDefinedType):
 
     def column_expression(self, col):
         # ref https://groups.google.com/g/sqlalchemy/c/2nGwTuwkNxw?pli=1
-        return func.mol_to_molblock(col, type_=self)
+        return func.mol_to_binary_mol(col, type_=self)
 
     def result_processor(self, dialect, coltype):
         def process(value):
             if value is None:
                 return None
-            try:
-                return Chem.MolFromMolBlock(value, sanitize=True, removeHs=False)
-            except Exception as e:
-                print("Failed to convert MolBlock to Mol:", e)
-                return None
+            return Chem.Mol(value)
 
         return process
 
