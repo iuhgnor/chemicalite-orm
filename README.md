@@ -17,34 +17,46 @@ pip install git+https://github.com/iuhgnor/chemicalite-orm.git
 1. 创建数据库
 
     ```python
-   from sqlalchemy import event, create_engine
-   from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import Integer, String
+    from sqlalchemy.orm import Mapped, declarative_base, mapped_column
 
-    from chemicalite_orm.models import Compound
-
+    from chemicalite_orm.search import enable_chem_search
+    from chemicalite_orm.types import Mol
 
     DATABASE_URL = "sqlite:///chemicalite.db"
+
     engine = create_engine(DATABASE_URL, echo=True)
 
-    # 加载ChemicaLite
-   @event.listens_for(engine, "connect")
-   def load_chemicalite(dbapi_conn, connection_record):
-       dbapi_conn.enable_load_extension(True)
-       dbapi_conn.load_extension("chemicalite")
+
+    @event.listens_for(engine, "connect")
+    def load_chemicalite(dbapi_conn, connection_record):
+        dbapi_conn.enable_load_extension(True)
+        dbapi_conn.load_extension("chemicalite")
 
 
-   SessionLocal = sessionmaker(bind=engine)
-   Base.metadata.create_all(engine)
+    Base = declarative_base()
+
+
+    @enable_chem_search(mol_col="molecule", id_col="id", fp_bits=2048, fp_radius=2)
+    class Compound(Base):  # type: ignore
+        __tablename__ = "compound"
+
+        id: Mapped[int] = mapped_column(Integer, primary_key=True)
+        name: Mapped[str] = mapped_column(String, nullable=False)
+        smiles: Mapped[str] = mapped_column(String, nullable=False)
+        molecule: Mapped[Mol] = mapped_column(Mol, nullable=False)
+
+
+    Base.metadata.create_all(engine)       
+    SessionLocal = sessionmaker(bind=engine)
 
     ```
 
-2. 插入数据
+1. 插入数据
 
     ```python
-    from chemicalite_orm.molecules import SMILES_SAMPLE
-
     with SessionLocal() as session:
-        for i, smiles in enumerate(SMILES_SAMPLE):
+        for i, smiles in enumerate(mols):
             compound = Compound(
                 name=f"mol_{i}",
                 smiles=smiles,
@@ -55,7 +67,7 @@ pip install git+https://github.com/iuhgnor/chemicalite-orm.git
 
     ```
 
-3. 检索数据
+2. 检索数据
 
    ```python
     with SessionLocal() as session:
@@ -68,19 +80,15 @@ pip install git+https://github.com/iuhgnor/chemicalite-orm.git
 
    ![output](./examples/images/3.png)
 
-4. 子结构查询
+3. 子结构查询
 
     ```python
-    from rdkit import Chem
-    from rdkit.Chem import Draw
-
-
     with SessionLocal() as session:
-        hits = Compound.search_by_substructure(session, "c1ccnnc1")        
+        stmt = select(Compound).where(Compound.has_substructure("c1ccccc1"))
+        results = session.execute(stmt).scalars().all()
 
-    hit_smis = [hit.smiles for hit in hits]
-    hit_mols = [Chem.MolFromSmiles(smi) for smi in hit_smis[:10]]
-    Draw.MolsToGridImage(hit_mols, molsPerRow=5)
+    mols = [r.molecule for r in results[:10]]
+    Draw.MolsToGridImage(mols, molsPerRow=5)
 
     ```
 
@@ -89,19 +97,12 @@ pip install git+https://github.com/iuhgnor/chemicalite-orm.git
 5. 相似性查询
 
     ```python
-    from rdkit import Chem
-    from rdkit.Chem import Draw
+    with SessionLocal() as session:
+        stmt = select(Compound).where(Compound.similarity_to("c1ccnnc1", 0.1))
+        results = session.execute(stmt).scalars().all()
 
-
-    with SessionLocal() as session
-        hits = Compound.search_by_similarity(session, "c1ccnnc1", 0.01)
-
-    hit_smis = [hit.smiles for hit in hits[:10]]
-    hit_mols = [Chem.MolFromSmiles(smi) for smi in hit_smis]
-    similarity = [hit.sim for hit in hits[:10]]
-    Draw.MolsToGridImage(
-        hit_mols, molsPerRow=5, legends=[f"{s:.2f}" for s in similarity]
-    )
+    mols = [r.molecule for r in results[:10]]
+    Draw.MolsToGridImage(mols, molsPerRow=5)
 
 
     ```
