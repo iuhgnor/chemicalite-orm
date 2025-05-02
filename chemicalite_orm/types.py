@@ -12,9 +12,9 @@ class Mol(UserDefinedType):
     def bind_processor(self, dialect):
         def process(value):
             if isinstance(value, Chem.Mol):
-                return value.ToBinary()
+                return memoryview(value.ToBinary())
             elif isinstance(value, str):
-                return Chem.MolFromSmiles(value).ToBinary()
+                return memoryview(Chem.MolFromSmiles(value).ToBinary())
             return None
 
         return process
@@ -30,7 +30,7 @@ class Mol(UserDefinedType):
         def process(value):
             if value is None:
                 return None
-            return Chem.Mol(value)
+            return Chem.Mol(bytes(value))
 
         return process
 
